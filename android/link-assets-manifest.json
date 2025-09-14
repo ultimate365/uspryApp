@@ -1,0 +1,25 @@
+{
+  "migIndex": 1,
+  "data": [
+    {
+      "path": "src/assets/fonts/kalpurush.ttf",
+      "sha1": "98692f880494e6d4538cdb7e8cc3d9e5935588a8"
+    },
+    {
+      "path": "src/assets/fonts/sho.ttf",
+      "sha1": "6421c265b351e176f122276010ddebee083047d1"
+    },
+    {
+      "path": "src/assets/fonts/Shonar.ttf",
+      "sha1": "9f580ce86ed9f710742f23c07fcc83ebf913c7a1"
+    },
+    {
+      "path": "src/assets/fonts/Shonarb.ttf",
+      "sha1": "1fa89fc7a982148ce855807284fcc72f5ba77bff"
+    },
+    {
+      "path": "src/assets/fonts/times.ttf",
+      "sha1": "2fd7802771ae710a66b221338130855252ce74f7"
+    }
+  ]
+}
