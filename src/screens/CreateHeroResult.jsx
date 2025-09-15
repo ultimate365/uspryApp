@@ -119,9 +119,9 @@ export default function CreateHeroResult() {
     { fullName: 'Bengali', shortName: 'ben' },
     { fullName: 'English', shortName: 'eng' },
     { fullName: 'Mathematics', shortName: 'math' },
+    { fullName: 'ENVS', shortName: 'envs' },
     { fullName: 'Work Education', shortName: 'work' },
     { fullName: 'Health', shortName: 'health' },
-    { fullName: 'ENVS', shortName: 'envs' },
   ];
 
   const studentData = async () => {
