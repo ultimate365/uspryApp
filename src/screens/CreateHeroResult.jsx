@@ -108,7 +108,7 @@ export default function CreateHeroResult() {
   const [selectPart, setSelectPart] = useState('');
   const [selectedClass, setSelectedClass] = useState('');
   const [selectedSubject, setSelectedSubject] = useState('');
-  const [selectedFullSubject, setSelectedFullSubject] = useState("");
+  const [selectedFullSubject, setSelectedFullSubject] = useState('');
   const [isPartSelected, setIsPartSelected] = useState(false);
   const [isClassSelected, setIsClassSelected] = useState(false);
   const [isSubjectSelected, setIsSubjectSelected] = useState(false);
@@ -208,7 +208,7 @@ export default function CreateHeroResult() {
       setSelectedClass('');
       setIsClassSelected(false);
       setSelectedSubject('');
-      selectedFullSubject("")
+      selectedFullSubject('');
       setIsSubjectSelected(false);
     } catch (error) {
       showToast('error', 'Error updating marks');
@@ -264,12 +264,12 @@ export default function CreateHeroResult() {
           (item.math1 ? item.math1 : 0) +
           (item.math2 ? item.math2 : 0) +
           (item.math3 ? item.math3 : 0) +
-          (item.health1 ? item.health1 : 0) +
-          (item.health2 ? item.health2 : 0) +
-          (item.health3 ? item.health3 : 0) +
           (item.work1 ? item.work1 : 0) +
           (item.work2 ? item.work2 : 0) +
           (item.work3 ? item.work3 : 0) +
+          (item.health1 ? item.health1 : 0) +
+          (item.health2 ? item.health2 : 0) +
+          (item.health3 ? item.health3 : 0) +
           (item.envs1 ? item.envs1 : 0) +
           (item.envs2 ? item.envs2 : 0) +
           (item.envs3 ? item.envs3 : 0)}
@@ -463,9 +463,7 @@ export default function CreateHeroResult() {
                     setSelectedSubject(value);
                     setIsSubjectSelected(!!value);
                     setSelectedFullSubject(
-                      subjects.find(
-                        (sub) => sub.shortName === value
-                      ).fullName
+                      subjects.find(sub => sub.shortName === value).fullName,
                     );
                   }}
                 >
@@ -571,7 +569,7 @@ export default function CreateHeroResult() {
                     setSelectedClass('');
                     setIsClassSelected(false);
                     setSelectedSubject('');
-                    setSelectedFullSubject("");
+                    setSelectedFullSubject('');
                     setIsSubjectSelected(false);
                   }}
                 />
@@ -587,7 +585,7 @@ export default function CreateHeroResult() {
                   setSelectedClass('');
                   setIsClassSelected(false);
                   setSelectedSubject('');
-                  setSelectedFullSubject("");
+                  setSelectedFullSubject('');
                   setIsSubjectSelected(false);
                 }}
               />
@@ -636,21 +634,21 @@ export default function CreateHeroResult() {
                     ? viewStudent.ben1 +
                       viewStudent.eng1 +
                       viewStudent.math1 +
-                      viewStudent.health1 +
                       viewStudent.work1 +
+                      viewStudent.health1 +
                       viewStudent.envs1
                     : part === 2
                     ? viewStudent.ben2 +
                       viewStudent.eng2 +
                       viewStudent.math2 +
-                      viewStudent.health2 +
                       viewStudent.work2 +
+                      viewStudent.health2 +
                       viewStudent.envs2
                     : viewStudent.ben3 +
                       viewStudent.eng3 +
                       viewStudent.math3 +
-                      viewStudent.health3 +
                       viewStudent.work3 +
+                      viewStudent.health3 +
                       viewStudent.envs3}
                 </Text>
               </View>
@@ -666,12 +664,12 @@ export default function CreateHeroResult() {
                 viewStudent.math1 +
                 viewStudent.math2 +
                 viewStudent.math3 +
-                viewStudent.health1 +
-                viewStudent.health2 +
-                viewStudent.health3 +
                 viewStudent.work1 +
                 viewStudent.work2 +
                 viewStudent.work3 +
+                viewStudent.health1 +
+                viewStudent.health2 +
+                viewStudent.health3 +
                 viewStudent.envs1 +
                 viewStudent.envs2 +
                 viewStudent.envs3}
@@ -782,27 +780,27 @@ export default function CreateHeroResult() {
                     ? (editStudentMarks.ben1 ? editStudentMarks.ben1 : 0) +
                       (editStudentMarks.eng1 ? editStudentMarks.eng1 : 0) +
                       (editStudentMarks.math1 ? editStudentMarks.math1 : 0) +
+                      (editStudentMarks.work1 ? editStudentMarks.work1 : 0) +
                       (editStudentMarks.health1
                         ? editStudentMarks.health1
                         : 0) +
-                      (editStudentMarks.work1 ? editStudentMarks.work1 : 0) +
                       (editStudentMarks.envs1 ? editStudentMarks.envs1 : 0)
                     : part === 2
                     ? (editStudentMarks.ben2 ? editStudentMarks.ben2 : 0) +
                       (editStudentMarks.eng2 ? editStudentMarks.eng2 : 0) +
                       (editStudentMarks.math2 ? editStudentMarks.math2 : 0) +
+                      (editStudentMarks.work2 ? editStudentMarks.work2 : 0) +
                       (editStudentMarks.health2
                         ? editStudentMarks.health2
                         : 0) +
-                      (editStudentMarks.work2 ? editStudentMarks.work2 : 0) +
                       (editStudentMarks.envs2 ? editStudentMarks.envs2 : 0)
                     : (editStudentMarks.ben3 ? editStudentMarks.ben3 : 0) +
                       (editStudentMarks.eng3 ? editStudentMarks.eng3 : 0) +
                       (editStudentMarks.math3 ? editStudentMarks.math3 : 0) +
+                      (editStudentMarks.work3 ? editStudentMarks.work3 : 0) +
                       (editStudentMarks.health3
                         ? editStudentMarks.health3
                         : 0) +
-                      (editStudentMarks.work3 ? editStudentMarks.work3 : 0) +
                       (editStudentMarks.envs3 ? editStudentMarks.envs3 : 0)}
                 </Text>
               </View>
@@ -818,12 +816,12 @@ export default function CreateHeroResult() {
                 (editStudentMarks.math1 ? editStudentMarks.math1 : 0) +
                 (editStudentMarks.math2 ? editStudentMarks.math2 : 0) +
                 (editStudentMarks.math3 ? editStudentMarks.math3 : 0) +
-                (editStudentMarks.health1 ? editStudentMarks.health1 : 0) +
-                (editStudentMarks.health2 ? editStudentMarks.health2 : 0) +
-                (editStudentMarks.health3 ? editStudentMarks.health3 : 0) +
                 (editStudentMarks.work1 ? editStudentMarks.work1 : 0) +
                 (editStudentMarks.work2 ? editStudentMarks.work2 : 0) +
                 (editStudentMarks.work3 ? editStudentMarks.work3 : 0) +
+                (editStudentMarks.health1 ? editStudentMarks.health1 : 0) +
+                (editStudentMarks.health2 ? editStudentMarks.health2 : 0) +
+                (editStudentMarks.health3 ? editStudentMarks.health3 : 0) +
                 (editStudentMarks.envs1 ? editStudentMarks.envs1 : 0) +
                 (editStudentMarks.envs2 ? editStudentMarks.envs2 : 0) +
                 (editStudentMarks.envs3 ? editStudentMarks.envs3 : 0)}
