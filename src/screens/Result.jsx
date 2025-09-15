@@ -1,26 +1,9 @@
 import React, { useEffect, useState } from 'react';
-import {
-  View,
-  Text,
-  FlatList,
-  TouchableOpacity,
-  StyleSheet,
-  ScrollView,
-  BackHandler,
-} from 'react-native';
-import { Picker } from '@react-native-picker/picker';
-import {
-  getFirestore,
-  collection,
-  doc,
-  getDocs,
-  updateDoc,
-  query,
-  writeBatch,
-} from '@react-native-firebase/firestore';
+import { View, Text, StyleSheet, ScrollView, BackHandler } from 'react-native';
+
 import { useGlobalContext } from '../context/Store';
 import { SCHOOLNAME } from '../modules/constants';
-import { useIsFocused, useNavigation } from '@react-navigation/native';
+import { useNavigation } from '@react-navigation/native';
 import { showToast } from '../modules/Toaster';
 import Loader from '../components/Loader';
 import CustomButton from '../components/CustomButton';
@@ -31,16 +14,11 @@ import {
 } from 'react-native-responsive-dimensions';
 import { THEME_COLOR } from '../utils/Colors';
 import CustomTextInput from '../components/CustomTextInput';
-import AnimatedSeacrch from '../components/AnimatedSeacrch';
 import { getDocumentByField } from '../firebase/firestoreHelper';
-const firestore = getFirestore();
 
 export default function Result() {
-  const { state, studentResultState, setStudentResultState, setActiveTab } =
-    useGlobalContext();
+  const { setActiveTab } = useGlobalContext();
   const navigation = useNavigation();
-  const access = state?.ACCESS;
-  const isFocused = useIsFocused();
   const [loader, setLoader] = useState(false);
   const [studentId, setStudentId] = useState('');
   const [rollNo, setRollNo] = useState('');
@@ -107,6 +85,75 @@ export default function Result() {
       console.log(error);
     }
   };
+  const getPartTotal = part => {
+    return subjects.reduce((total, sub) => {
+      const subjectPartKey = `${sub.shortName}${part}`;
+      return total + (viewStudent[subjectPartKey] || 0);
+    }, 0);
+  };
+  const totalMarks =
+    viewStudent.ben1 +
+    viewStudent.ben2 +
+    viewStudent.ben3 +
+    viewStudent.eng1 +
+    viewStudent.eng2 +
+    viewStudent.eng3 +
+    viewStudent.math1 +
+    viewStudent.math2 +
+    viewStudent.math3 +
+    viewStudent.work1 +
+    viewStudent.work2 +
+    viewStudent.work3 +
+    viewStudent.health1 +
+    viewStudent.health2 +
+    viewStudent.health3 +
+    viewStudent.envs1 +
+    viewStudent.envs2 +
+    viewStudent.envs3;
+  const getGrade = () => {
+    const maxMarks =
+      getPartTotal(3) > 0
+        ? viewStudent.nclass === 0
+          ? 300
+          : viewStudent.nclass < 3
+          ? 450
+          : 600
+        : viewStudent.nclass === 0
+        ? 150
+        : viewStudent.nclass < 3
+        ? 200
+        : 250 + getPartTotal(2) > 0
+        ? viewStudent.nclass === 0
+          ? 150
+          : viewStudent.nclass < 3
+          ? 200
+          : 250
+        : viewStudent.nclass === 0
+        ? 100
+        : viewStudent.nclass < 3
+        ? 150
+        : 200;
+
+    const percentage = (totalMarks / maxMarks) * 100;
+    if (percentage >= 90) return 'A+';
+    if (percentage >= 80) return 'A';
+    if (percentage >= 70) return 'B+';
+    if (percentage >= 60) return 'B';
+    if (percentage >= 45) return 'C+';
+    if (percentage >= 25) return 'C';
+    return 'D';
+  };
+  useEffect(() => {
+    const backHandler = BackHandler.addEventListener(
+      'hardwareBackPress',
+      () => {
+        navigation.navigate('Home');
+        setActiveTab(0);
+        return true;
+      },
+    );
+    return () => backHandler.remove();
+  }, []);
   return (
     <View style={styles.container}>
       <Loader visible={loader} />
@@ -151,77 +198,129 @@ export default function Result() {
             <Text style={styles.label}>ID: {viewStudent.student_id}</Text>
             <Text style={styles.label}>Roll: {viewStudent.roll_no}</Text>
             <Text style={styles.label}>Class: {viewStudent.class}</Text>
-            {[1, 2, 3].map(part => (
-              <View key={part} style={{ marginBottom: responsiveHeight(1) }}>
-                <Text style={styles.label}>Part {part}</Text>
+            {[1, 2, 3].map(part => {
+              const partTotal = getPartTotal(part);
+              const studentClass = viewStudent.nclass;
+              return (
+                partTotal > 0 && (
+                  <View key={part} style={styles.dataView}>
+                    <Text style={styles.label}>Part {part}</Text>
 
-                {subjects.map((sub, index) => {
-                  const subjectPartKey = `${sub.shortName}${part}`;
-                  const mark = viewStudent[subjectPartKey];
-                  return (
-                    mark !== undefined &&
-                    mark !== 0 && (
-                      <View
-                        key={index}
-                        style={{
-                          flexDirection: 'row',
-                          justifyContent: 'space-between',
-                          marginHorizontal: responsiveWidth(5),
-                          marginVertical: responsiveHeight(0.5),
-                        }}
-                      >
-                        <Text style={styles.label}>{sub.fullName}</Text>
-                        <Text style={styles.label}>{mark}</Text>
-                      </View>
-                    )
-                  );
-                })}
+                    {subjects.map((sub, index) => {
+                      const subjectPartKey = `${sub.shortName}${part}`;
+                      const mark = viewStudent[subjectPartKey];
+                      return (
+                        mark !== undefined &&
+                        mark !== 0 && (
+                          <View
+                            key={index}
+                            style={{
+                              flexDirection: 'row',
+                              justifyContent: 'space-between',
+                              marginHorizontal: responsiveWidth(5),
+                              marginVertical: responsiveHeight(0.5),
+                            }}
+                          >
+                            <Text style={styles.label}>{sub.fullName}</Text>
+                            <Text style={styles.label}>
+                              {mark} /{' '}
+                              {sub.shortName === 'work' ||
+                              sub.shortName === 'health'
+                                ? part === 1
+                                  ? 10
+                                  : part === 2
+                                  ? 15
+                                  : 25
+                                : part === 1
+                                ? 20
+                                : part === 2
+                                ? 30
+                                : 50}
+                            </Text>
+                          </View>
+                        )
+                      );
+                    })}
+                    <Text style={styles.label}>
+                      Total Marks: {partTotal} /{' '}
+                      {part === 1
+                        ? studentClass === 0
+                          ? 60
+                          : studentClass < 3
+                          ? 80
+                          : 100
+                        : part === 2
+                        ? studentClass === 0
+                          ? 90
+                          : studentClass < 3
+                          ? 120
+                          : 150
+                        : studentClass === 0
+                        ? 150
+                        : studentClass < 3
+                        ? 200
+                        : 250}
+                    </Text>
+                  </View>
+                )
+              );
+            })}
+            {getPartTotal(1) + getPartTotal(2) + getPartTotal(3) > 0 ? (
+              <View style={{ marginBottom: responsiveHeight(1) }}>
                 <Text style={styles.label}>
-                  Total Marks:{' '}
-                  {part === 1
-                    ? viewStudent.ben1 +
-                      viewStudent.eng1 +
-                      viewStudent.math1 +
-                      viewStudent.work1 +
-                      viewStudent.health1 +
-                      viewStudent.envs1
-                    : part === 2
-                    ? viewStudent.ben2 +
-                      viewStudent.eng2 +
-                      viewStudent.math2 +
-                      viewStudent.work2 +
-                      viewStudent.health2 +
-                      viewStudent.envs2
-                    : viewStudent.ben3 +
-                      viewStudent.eng3 +
-                      viewStudent.math3 +
-                      viewStudent.work3 +
-                      viewStudent.health3 +
-                      viewStudent.envs3}
+                  Gross Total Marks: {totalMarks}/{' '}
+                  {getPartTotal(3) > 0
+                    ? viewStudent.nclass === 0
+                      ? 300
+                      : viewStudent.nclass < 3
+                      ? 450
+                      : 600
+                    : viewStudent.nclass === 0
+                    ? 150
+                    : viewStudent.nclass < 3
+                    ? 200
+                    : 250 + getPartTotal(2) > 0
+                    ? viewStudent.nclass === 0
+                      ? 150
+                      : viewStudent.nclass < 3
+                      ? 200
+                      : 250
+                    : viewStudent.nclass === 0
+                    ? 100
+                    : viewStudent.nclass < 3
+                    ? 150
+                    : 200}
                 </Text>
+                <Text style={styles.label}>
+                  Percentage:{' '}
+                  {(
+                    (totalMarks /
+                      (getPartTotal(3) > 0
+                        ? viewStudent.nclass === 0
+                          ? 300
+                          : viewStudent.nclass < 3
+                          ? 450
+                          : 600
+                        : getPartTotal(2) > 0
+                        ? viewStudent.nclass === 0
+                          ? 150
+                          : viewStudent.nclass < 3
+                          ? 200
+                          : 250
+                        : viewStudent.nclass === 0
+                        ? 100
+                        : viewStudent.nclass < 3
+                        ? 150
+                        : 200)) *
+                    100
+                  ).toFixed(2)}
+                  %
+                </Text>
+                <Text style={styles.label}>Grade: {getGrade()}</Text>
               </View>
-            ))}
-            <Text style={styles.label}>
-              Gross Total Marks:{' '}
-              {viewStudent.ben1 +
-                viewStudent.ben2 +
-                viewStudent.ben3 +
-                viewStudent.eng1 +
-                viewStudent.eng2 +
-                viewStudent.eng3 +
-                viewStudent.math1 +
-                viewStudent.math2 +
-                viewStudent.math3 +
-                viewStudent.work1 +
-                viewStudent.work2 +
-                viewStudent.work3 +
-                viewStudent.health1 +
-                viewStudent.health2 +
-                viewStudent.health3 +
-                viewStudent.envs1 +
-                viewStudent.envs2 +
-                viewStudent.envs3}
-            </Text>
+            ) : (
+              <Text style={styles.label}>No Marks Available</Text>
+            )}
             <View style={styles.bottom}>
               <CustomButton
                 title={'Close'}
@@ -265,11 +364,20 @@ const styles = StyleSheet.create({
     flex: 1,
     alignSelf: 'center',
     justifyContent: 'center',
-    backgroundColor: '#ddd',
+    backgroundColor: '#f0f0f0',
     marginTop: responsiveHeight(1),
     borderRadius: 10,
     padding: 10,
     width: responsiveWidth(90),
+    shadowColor: '#000',
+    shadowOffset: {
+      width: 0,
+      height: 2,
+    },
+    shadowOpacity: 0.25,
+    shadowRadius: 3.84,
+    elevation: 5,
+    marginVertical: responsiveHeight(1),
   },
   dataText: {
     alignSelf: 'center',
