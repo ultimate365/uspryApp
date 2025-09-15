@@ -208,7 +208,7 @@ export default function CreateHeroResult() {
       setSelectedClass('');
       setIsClassSelected(false);
       setSelectedSubject('');
-      selectedFullSubject('');
+      setSelectedFullSubject('');
       setIsSubjectSelected(false);
     } catch (error) {
       showToast('error', 'Error updating marks');
@@ -334,6 +334,7 @@ export default function CreateHeroResult() {
               data={filteredData}
               renderItem={renderItem}
               keyExtractor={item => item.id}
+              scrollEnabled={false} // ✅ disables nested scrolling
             />
           </ScrollView>
         )}
@@ -356,7 +357,7 @@ export default function CreateHeroResult() {
                   setIsSubjectSelected(false);
                   setSelectedClass('');
                   setSelectedSubject('');
-                  selectedFullSubject('');
+                  setSelectedFullSubject('');
                 }}
               >
                 <Picker.Item
@@ -525,30 +526,37 @@ export default function CreateHeroResult() {
                 </Picker>
               </View>
             )}
-            {isSubjectSelected &&
-              data
-                .filter(student => student.class === selectedClass)
-                .sort((a, b) => a.roll_no - b.roll_no)
-                .map(student => {
-                  const markItem = marksInput.find(
-                    item => item.id == student.id,
-                  );
-                  const mark = markItem ? markItem.mark : 0;
+            {isSubjectSelected && (
+              <View style={{ marginBottom: responsiveHeight(2) }}>
+                <Text selectable style={styles.title}>
+                  Entering marks for {selectedClass} - {selectedFullSubject} -{' '}
+                  {selectPart}
+                </Text>
+                {data
+                  .filter(student => student.class === selectedClass)
+                  .sort((a, b) => a.roll_no - b.roll_no)
+                  .map(student => {
+                    const markItem = marksInput.find(
+                      item => item.id == student.id,
+                    );
+                    const mark = markItem ? markItem.mark : 0;
 
-                  return (
-                    <View key={student.id} style={styles.markInputContainer}>
-                      <CustomTextInput
-                        title={`${student.student_name} (Roll: ${student.roll_no})`}
-                        type={'numberpad'}
-                        placeholder="Enter Marks"
-                        value={mark.toString()}
-                        onChangeText={value => {
-                          handleMarkChange(student.id, value);
-                        }}
-                      />
-                    </View>
-                  );
-                })}
+                    return (
+                      <View key={student.id} style={styles.markInputContainer}>
+                        <CustomTextInput
+                          title={`${student.student_name} (Roll: ${student.roll_no})`}
+                          type={'numberpad'}
+                          placeholder="Enter Marks"
+                          value={mark.toString()}
+                          onChangeText={value => {
+                            handleMarkChange(student.id, value);
+                          }}
+                        />
+                      </View>
+                    );
+                  })}
+              </View>
+            )}
             <View style={styles.bottom}>
               {isSubjectSelected && (
                 <CustomButton

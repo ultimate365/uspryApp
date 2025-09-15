@@ -1,24 +1,31 @@
-import {Alert, BackHandler, Linking, StyleSheet, Text, View} from 'react-native';
-import React, {useEffect, useState} from 'react';
+import {
+  Alert,
+  BackHandler,
+  Linking,
+  StyleSheet,
+  Text,
+  View,
+} from 'react-native';
+import React, { useEffect, useState } from 'react';
 import Header from '../components/Header';
 import {
   responsiveHeight,
   responsiveWidth,
   responsiveFontSize,
 } from 'react-native-responsive-dimensions';
-import {THEME_COLOR} from '../utils/Colors';
+import { THEME_COLOR } from '../utils/Colors';
 import CustomButton from '../components/CustomButton';
 import axios from 'axios';
-import {TELEGRAM_TEACHER_GROUP, WEBSITE} from '../modules/constants';
+import { TELEGRAM_TEACHER_GROUP, WEBSITE } from '../modules/constants';
 import EncryptedStorage from 'react-native-encrypted-storage';
 import Loader from '../components/Loader';
-import {showToast} from '../modules/Toaster';
+import { showToast } from '../modules/Toaster';
 import CustomTextInput from '../components/CustomTextInput';
-import {useNavigation} from '@react-navigation/native';
-import {useGlobalContext} from '../context/Store';
+import { useNavigation } from '@react-navigation/native';
+import { useGlobalContext } from '../context/Store';
 const VerifyLogin = () => {
   const navigation = useNavigation();
-  const {setState,setActiveTab} = useGlobalContext();
+  const { setState, setActiveTab } = useGlobalContext();
   const [phone, setPhone] = useState(null);
   const [userDetails, setUserDetails] = useState({});
   const [name, setName] = useState(null);
@@ -97,8 +104,7 @@ const VerifyLogin = () => {
   useEffect(() => {
     getDetails();
   }, []);
-  useEffect(() => {
-  }, [phone, name, userDetails]);
+  useEffect(() => {}, [phone, name, userDetails]);
   useEffect(() => {
     const backHandler = BackHandler.addEventListener(
       'hardwareBackPress',
@@ -111,7 +117,7 @@ const VerifyLogin = () => {
     return () => backHandler.remove();
   }, []);
   return (
-    <View style={{flex: 1, justifyContent: 'center', alignItems: 'center'}}>
+    <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
       <Header />
       <Text style={styles.title}>Verify Login</Text>
       {!otpSent ? (
@@ -134,7 +140,12 @@ const VerifyLogin = () => {
             title={'OTP'}
             value={mobileOTP}
             maxLength={6}
-            onChangeText={text => setMobileOTP(text)}
+            onChangeText={text => {
+              setMobileOTP(text);
+              if (text.length === 6) {
+                verifyOTP();
+              }
+            }}
           />
           <CustomButton
             title={'Verify OTP'}
