@@ -108,6 +108,7 @@ export default function CreateHeroResult() {
   const [selectPart, setSelectPart] = useState('');
   const [selectedClass, setSelectedClass] = useState('');
   const [selectedSubject, setSelectedSubject] = useState('');
+  const [selectedFullSubject, setSelectedFullSubject] = useState("");
   const [isPartSelected, setIsPartSelected] = useState(false);
   const [isClassSelected, setIsClassSelected] = useState(false);
   const [isSubjectSelected, setIsSubjectSelected] = useState(false);
@@ -119,9 +120,9 @@ export default function CreateHeroResult() {
     { fullName: 'Bengali', shortName: 'ben' },
     { fullName: 'English', shortName: 'eng' },
     { fullName: 'Mathematics', shortName: 'math' },
-    { fullName: 'ENVS', shortName: 'envs' },
     { fullName: 'Work Education', shortName: 'work' },
     { fullName: 'Health', shortName: 'health' },
+    { fullName: 'ENVS', shortName: 'envs' },
   ];
 
   const studentData = async () => {
@@ -207,6 +208,7 @@ export default function CreateHeroResult() {
       setSelectedClass('');
       setIsClassSelected(false);
       setSelectedSubject('');
+      selectedFullSubject("")
       setIsSubjectSelected(false);
     } catch (error) {
       showToast('error', 'Error updating marks');
@@ -354,6 +356,7 @@ export default function CreateHeroResult() {
                   setIsSubjectSelected(false);
                   setSelectedClass('');
                   setSelectedSubject('');
+                  selectedFullSubject('');
                 }}
               >
                 <Picker.Item
@@ -459,6 +462,11 @@ export default function CreateHeroResult() {
                   onValueChange={value => {
                     setSelectedSubject(value);
                     setIsSubjectSelected(!!value);
+                    setSelectedFullSubject(
+                      subjects.find(
+                        (sub) => sub.shortName === value
+                      ).fullName
+                    );
                   }}
                 >
                   <Picker.Item
@@ -563,6 +571,7 @@ export default function CreateHeroResult() {
                     setSelectedClass('');
                     setIsClassSelected(false);
                     setSelectedSubject('');
+                    setSelectedFullSubject("");
                     setIsSubjectSelected(false);
                   }}
                 />
@@ -578,6 +587,7 @@ export default function CreateHeroResult() {
                   setSelectedClass('');
                   setIsClassSelected(false);
                   setSelectedSubject('');
+                  setSelectedFullSubject("");
                   setIsSubjectSelected(false);
                 }}
               />
