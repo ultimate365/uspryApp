@@ -272,6 +272,38 @@ const SideNav = () => {
                 Student List
               </Text>
             </TouchableOpacity>
+            <TouchableOpacity
+              onPress={() => {
+                setActiveTab(13);
+                navigation.navigate('Home');
+                setNavState(false);
+              }}
+              style={{
+                justifyContent: 'flex-start',
+                alignItems: 'center',
+                paddingVertical: responsiveWidth(2),
+                flexDirection: 'row',
+                width: responsiveWidth(55),
+                paddingLeft: responsiveWidth(2),
+              }}
+            >
+              <FontAwesome6
+                name="ranking-star"
+                size={20}
+                color={activeTab == 13 ? 'purple' : THEME_COLOR}
+              />
+              <Text
+                style={[
+                  styles.bottomText,
+                  {
+                    color: activeTab == 13 ? 'purple' : THEME_COLOR,
+                    textAlign: 'center',
+                  },
+                ]}
+              >
+                Result
+              </Text>
+            </TouchableOpacity>
           </View>
         )}
         {userType === 'teacher' && (
@@ -388,38 +420,7 @@ const SideNav = () => {
                 Enter Result
               </Text>
             </TouchableOpacity>
-            <TouchableOpacity
-              onPress={() => {
-                setActiveTab(13);
-                navigation.navigate('Home');
-                setNavState(false);
-              }}
-              style={{
-                justifyContent: 'flex-start',
-                alignItems: 'center',
-                paddingVertical: responsiveWidth(2),
-                flexDirection: 'row',
-                width: responsiveWidth(55),
-                paddingLeft: responsiveWidth(2),
-              }}
-            >
-              <FontAwesome6
-                name="ranking-star"
-                size={20}
-                color={activeTab == 13 ? 'purple' : THEME_COLOR}
-              />
-              <Text
-                style={[
-                  styles.bottomText,
-                  {
-                    color: activeTab == 13 ? 'purple' : THEME_COLOR,
-                    textAlign: 'center',
-                  },
-                ]}
-              >
-                Result
-              </Text>
-            </TouchableOpacity>
+
             <TouchableOpacity
               onPress={() => {
                 setActiveTab(5);

@@ -106,6 +106,11 @@ const VerifyLogin = () => {
   }, []);
   useEffect(() => {}, [phone, name, userDetails]);
   useEffect(() => {
+    if (mobileOTP.length === 6) {
+      verifyOTP();
+    }
+  }, [mobileOTP]);
+  useEffect(() => {
     const backHandler = BackHandler.addEventListener(
       'hardwareBackPress',
       () => {
@@ -140,12 +145,7 @@ const VerifyLogin = () => {
             title={'OTP'}
             value={mobileOTP}
             maxLength={6}
-            onChangeText={text => {
-              setMobileOTP(text);
-              if (text.length === 6) {
-                verifyOTP();
-              }
-            }}
+            onChangeText={text => setMobileOTP(text)}
           />
           <CustomButton
             title={'Verify OTP'}

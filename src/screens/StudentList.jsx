@@ -14,7 +14,7 @@ import { THEME_COLOR } from '../utils/Colors';
 import CustomButton from '../components/CustomButton';
 import CustomTextInput from '../components/CustomTextInput';
 import Loader from '../components/Loader';
-import { useNavigation } from '@react-navigation/native';
+import { useIsFocused, useNavigation } from '@react-navigation/native';
 import {
   responsiveHeight,
   responsiveWidth,
@@ -42,7 +42,10 @@ export default function StudentList() {
     setActiveTab,
   } = useGlobalContext();
   const navigation = useNavigation();
+  const isFocused = useIsFocused();
   const access = state?.ACCESS;
+  const userType = state.USER.userType;
+  const studentID = state.USER.student_id;
   const docId = uuid.v4().split('-')[0];
   const [showTable, setShowTable] = useState(false);
   const [loader, setLoader] = useState(false);
@@ -246,7 +249,10 @@ export default function StudentList() {
       setFilteredData(studentState);
       setShowTable(true);
     }
-  }, []);
+    console.log('userType', userType);
+    console.log('access', access);
+    console.log('studentID', studentID);
+  }, [isFocused]);
   useEffect(() => {
     const backHandler = BackHandler.addEventListener(
       'hardwareBackPress',
@@ -264,6 +270,7 @@ export default function StudentList() {
       <ScrollView
         ref={scrollRef}
         style={{ marginVertical: responsiveHeight(2) }}
+        scrollEnabled={false} // ✅ disables nested scrolling
       >
         {access === 'teacher' && (
           <CustomButton
@@ -332,7 +339,7 @@ export default function StudentList() {
         {filteredData.length > 0 && showTable ? (
           <FlatList
             data={filteredData.slice(firstData, visibleItems)}
-            showsHorizontalScrollIndicator={false}
+            scrollEnabled={false}
             renderItem={({ item, index }) => {
               return (
                 <View style={styles.dataView} key={index}>
@@ -354,11 +361,12 @@ export default function StudentList() {
                   <Text selectable style={styles.bankDataText}>
                     Mother's Name: {item.mother_name}
                   </Text>
-                  {access && (
+                  {access === 'teacher' ||
+                  (userType === 'student' && studentID === item.student_id) ? (
                     <Text selectable style={styles.bankDataText}>
                       Student ID: {item.student_id}
                     </Text>
-                  )}
+                  ) : null}
                   {access === 'teacher' && (
                     <View>
                       {item.mobile === '0' ? null : item.mobile ===
