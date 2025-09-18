@@ -9,7 +9,7 @@ import {
   Linking,
   FlatList,
 } from 'react-native';
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { THEME_COLOR } from '../utils/Colors';
 import CustomButton from '../components/CustomButton';
 import CustomTextInput from '../components/CustomTextInput';
@@ -30,6 +30,7 @@ import {
   sortMonthwise,
   months,
   DDMMYYYYtoNewDate,
+  findEmptyValues,
 } from '../modules/calculatefunctions';
 import {
   deleteDocument,
@@ -56,7 +57,7 @@ export default function TeacherLeaves() {
   const navigation = useNavigation();
   const access = state?.ACCESS;
   const isHT = state.USER.desig === 'HT' ? true : false;
-
+  const leaveRef = useRef();
   const docId = uuid.v4().split('-')[0].substring(0, 6);
   const [month, setMonth] = useState('');
   const [year, setYear] = useState('');
@@ -128,6 +129,7 @@ export default function TeacherLeaves() {
     date: todayInString(),
     sl: '',
   });
+  const [showLeaveDateAdd, setShowLeaveDateAdd] = useState(false);
   const [selectedTeacher, setSelectedTeacher] = useState('');
   const [showCLAdd, setShowCLAdd] = useState(false);
   const [showClDel, setShowClDel] = useState(false);
@@ -195,6 +197,35 @@ export default function TeacherLeaves() {
     }
     const tarikh = `${day}-${month}-${year}`;
     setAddLeaveDateData({ ...addLeaveDateData, date: tarikh });
+    setFontColor('black');
+  };
+  const calculateLeaveDate = (event, selectedDate) => {
+    const currentSelectedDate = selectedDate || date;
+    setOpen('');
+    setDob(currentSelectedDate);
+    const year = currentSelectedDate?.getFullYear();
+    let month = currentSelectedDate?.getMonth() + 1;
+    if (month < 10) {
+      month = `0${month}`;
+    }
+    let day = currentSelectedDate?.getDate();
+    if (day < 10) {
+      day = `0${day}`;
+    }
+    const date = `${day}-${month}-${year}`;
+    setAddLeaveDateData({
+      ...addLeaveDateData,
+      date,
+      year: new Date(currentSelectedDate).getFullYear(),
+      month:
+        monthNamesWithIndex[
+          new Date(currentSelectedDate).getDate() > 10
+            ? new Date(currentSelectedDate).getMonth()
+            : new Date(currentSelectedDate).getMonth() === 0
+            ? 11
+            : new Date(currentSelectedDate).getMonth() + 1
+        ].monthName,
+    });
     setFontColor('black');
   };
   const calculateEditDate = (event, selectedDate) => {
@@ -478,6 +509,40 @@ export default function TeacherLeaves() {
         setLoader(false);
       });
   };
+  const uploadLeaveDateData = async () => {
+    setLoader(true);
+    setShowLeaveDateAdd(false);
+    await setDoc(
+      doc(firestore, 'leaveDates', addLeaveDateData.id),
+      addLeaveDateData,
+    )
+      .then(() => {
+        showToast('success', 'Teachers Leave Date Added Successfully');
+        const x = [...leaveDateState, addLeaveDateData];
+        const monthwiseSorted = sortLeaves(x);
+        setLeaveDateState(monthwiseSorted);
+        const z =
+          monthwiseSorted.filter(
+            el => el.year == selectedYear && el.month == month,
+          ) || [];
+        setFilteredLeaveData(z);
+        setLoader(false);
+        setAddLeaveDateData({
+          id: docId,
+          techID: '',
+          month: monthName,
+          year: yearName,
+          leaveType: '',
+          date: todayInString(),
+          sl: '',
+        });
+        setSelectedTeacher('');
+      })
+      .catch(e => {
+        setLoader(false);
+        showToast('error', 'Error updating data: ' + e.message);
+      });
+  };
   const updateLeaveDate = async () => {
     setLoader(true);
     setShowEditLeaveDateData(false);
@@ -486,7 +551,7 @@ export default function TeacherLeaves() {
       editLeaveDateObj,
     )
       .then(() => {
-        toast.success('Teachers Leave Date Updated Successfully');
+        showToast('success', 'Teachers Leave Date Updated Successfully');
         const x = leaveDateState.filter(el => el.id !== editLeaveDateObj.id);
         const y = [...x, editLeaveDateObj];
         const monthwiseSorted = sortLeaves(y);
@@ -500,7 +565,7 @@ export default function TeacherLeaves() {
       })
       .catch(e => {
         setLoader(false);
-        toast.error('Error updating data: ' + e.message);
+        showToast('error', 'Error updating data: ' + e.message);
       });
   };
   const deleteLeaveDate = async () => {
@@ -508,7 +573,7 @@ export default function TeacherLeaves() {
     setShowEditLeaveDateData(false);
     await deleteDoc(doc(firestore, 'leaveDates', editLeaveDateObj.id))
       .then(() => {
-        toast.success('Teachers Leave Date Deleted Successfully');
+        showToast('success', 'Teachers Leave Date Deleted Successfully');
         const x = leaveDateState.filter(el => el.id !== editLeaveDateObj.id);
         const y = x.filter(
           el =>
@@ -521,7 +586,7 @@ export default function TeacherLeaves() {
       })
       .catch(e => {
         setLoader(false);
-        toast.error('Error deleting data: ' + e.message);
+        showToast('error', 'Error deleting data: ' + e.message);
       });
   };
   function sortLeaves(leaves) {
@@ -603,33 +668,54 @@ export default function TeacherLeaves() {
       <Text style={styles.title}>Teacher Leaves</Text>
 
       {isHT && (
-        <CustomButton
-          title={'Add Month'}
-          size={'small'}
-          color={'green'}
-          fontSize={responsiveFontSize(1.5)}
-          onClick={() => {
-            setShowAddModal(true);
-            setShowData(false);
-            setAddData({
-              ...addData,
-              id: `${monthName}-${yearName}`,
-              month: monthName,
-              year: yearName,
-              leaves: allEnry[allEnry.length - 1]?.leaves.map(el => {
-                return {
-                  ...el,
-                  clThisMonth: 0,
-                  olThisMonth: 0,
-                };
-              }),
-            });
-            teacherLeaveState.filter(
-              item => item.id === `${monthName}-${yearName}`,
-            ).length > 0 &&
-              showToast('error', 'Data for this month already exists.');
-          }}
-        />
+        <View>
+          <CustomButton
+            title={'Add Month'}
+            size={'small'}
+            color={'green'}
+            fontSize={responsiveFontSize(1.5)}
+            onClick={() => {
+              setShowAddModal(true);
+              setShowData(false);
+              setAddData({
+                ...addData,
+                id: `${monthName}-${yearName}`,
+                month: monthName,
+                year: yearName,
+                leaves: allEnry[allEnry.length - 1]?.leaves.map(el => {
+                  return {
+                    ...el,
+                    clThisMonth: 0,
+                    olThisMonth: 0,
+                  };
+                }),
+              });
+              teacherLeaveState.filter(
+                item => item.id === `${monthName}-${yearName}`,
+              ).length > 0 &&
+                showToast('error', 'Data for this month already exists.');
+            }}
+          />
+          <CustomButton
+            title={'Add Leave Date'}
+            size={'medium'}
+            color={'chocolate'}
+            fontSize={responsiveFontSize(1.5)}
+            onClick={() => {
+              setShowLeaveDateAdd(true);
+              setAddLeaveDateData({
+                id: docId,
+                techID: '',
+                month: monthName,
+                year: yearName,
+                leaveType: '',
+                date: todayInString(),
+                sl: '',
+              });
+              setSelectedTeacher('');
+            }}
+          />
+        </View>
       )}
       {showAddModal && (
         <ScrollView
@@ -1116,6 +1202,281 @@ export default function TeacherLeaves() {
                   color={'red'}
                   size={'small'}
                   onClick={() => setShowCLAdd(false)}
+                />
+              </View>
+            </View>
+          </View>
+        </ReactNativeModal>
+        <ReactNativeModal
+          isVisible={showLeaveDateAdd}
+          onBackButtonPress={() => {
+            () => {
+              setShowLeaveDateAdd(false);
+              setAddLeaveDateData({
+                id: docId,
+                techID: '',
+                month: monthName,
+                year: yearName,
+                leaveType: '',
+                date: todayInString(),
+                sl: '',
+              });
+              setSelectedTeacher('');
+            };
+          }}
+          onBackdropPress={() => {
+            () => {
+              setShowLeaveDateAdd(false);
+              setAddLeaveDateData({
+                id: docId,
+                techID: '',
+                month: monthName,
+                year: yearName,
+                leaveType: '',
+                date: todayInString(),
+                sl: '',
+              });
+              setSelectedTeacher('');
+            };
+          }}
+        >
+          <View style={styles.modalView}>
+            <View style={styles.mainView}>
+              <Text selectable style={styles.title}>
+                Add Leave Date
+              </Text>
+              <CustomTextInput
+                value={addLeaveDateData?.id}
+                onChangeText={text =>
+                  setAddLeaveDateData({
+                    ...addLeaveDateData,
+                    id: text,
+                  })
+                }
+                placeholder="ID"
+                title={'ID'}
+              />
+              <View style={styles.pickerContainer}>
+                <Picker
+                  style={styles.picker}
+                  selectedValue={
+                    selectedTeacher
+                      ? `${addLeaveDateData.techID}+${selectedTeacher}`
+                      : ''
+                  }
+                  onValueChange={value => {
+                    if (value) {
+                      setAddLeaveDateData({
+                        ...addLeaveDateData,
+                        techID: value.split('+')[0],
+                        leaveType: '',
+                        sl: '',
+                      });
+                      setSelectedTeacher(value.split('+')[1]);
+                      if (leaveRef.current) {
+                        leaveRef.current.value = '';
+                      }
+                    } else {
+                      showToast('error', 'Please Select A Teacher');
+                    }
+                  }}
+                >
+                  <Picker.Item
+                    style={{
+                      color: 'black',
+                      backgroundColor: 'white',
+                    }}
+                    label="Please Select A Teacher"
+                    value=""
+                  />
+                  {leavesArray.map((el, i) => (
+                    <Picker.Item
+                      key={i}
+                      style={{
+                        color: 'black',
+                        backgroundColor: 'white',
+                      }}
+                      label={el.tname}
+                      value={`${el.id}+${el.tname}`}
+                    />
+                  ))}
+                </Picker>
+              </View>
+              <View style={{ marginVertical: responsiveHeight(1) }}>
+                <Text style={styles.label}>Select Date</Text>
+                <TouchableOpacity
+                  style={{
+                    marginTop: 10,
+                    borderColor: 'skyblue',
+                    borderWidth: 1,
+                    width: responsiveWidth(76),
+                    height: 50,
+                    alignSelf: 'center',
+                    borderRadius: responsiveWidth(3),
+                    justifyContent: 'center',
+                  }}
+                  onPress={() => setOpen(true)}
+                >
+                  <Text
+                    style={{
+                      fontSize: responsiveFontSize(1.6),
+                      color: fontColor,
+                      paddingLeft: 14,
+                    }}
+                  >
+                    {dob.getDate() < 10 ? '0' + dob.getDate() : dob.getDate()}-
+                    {dob.getMonth() + 1 < 10
+                      ? `0${dob.getMonth() + 1}`
+                      : dob.getMonth() + 1}
+                    -{dob.getFullYear()}
+                  </Text>
+                </TouchableOpacity>
+                {open && (
+                  <DateTimePickerAndroid
+                    testID="dateTimePicker"
+                    value={dob}
+                    mode="date"
+                    maximumDate={Date.parse(new Date())}
+                    // minimumDate={date}
+                    display="default"
+                    onChange={calculateLeaveDate}
+                  />
+                )}
+              </View>
+              <CustomTextInput
+                value={addLeaveDateData?.month}
+                onChangeText={text =>
+                  setAddLeaveDateData({
+                    ...addLeaveDateData,
+                    month: text,
+                  })
+                }
+                placeholder="Month"
+                title={'Month'}
+              />
+              <CustomTextInput
+                type={'number-pad'}
+                value={addLeaveDateData?.year.toString() || ''}
+                onChangeText={text => {
+                  if (text) {
+                    setAddLeaveDateData({
+                      ...addLeaveDateData,
+                      year: parseInt(text),
+                    });
+                  } else {
+                    setAddLeaveDateData({
+                      ...addLeaveDateData,
+                      year: '',
+                    });
+                  }
+                }}
+                placeholder="Year"
+                title={'Year'}
+              />
+              {addLeaveDateData.techID && (
+                <View style={styles.pickerContainer}>
+                  <Picker
+                    ref={leaveRef}
+                    style={styles.picker}
+                    selectedValue={addLeaveDateData.leaveType}
+                    onValueChange={value => {
+                      if (value) {
+                        const techLeaveSl = leaveDateState.filter(
+                          el =>
+                            el.techID === addLeaveDateData.techID &&
+                            el.leaveType === value &&
+                            el.month === addLeaveDateData.month &&
+                            el.year === addLeaveDateData.year,
+                        );
+                        setAddLeaveDateData({
+                          ...addLeaveDateData,
+                          leaveType: value,
+                          sl:
+                            techLeaveSl.length > 0 ? techLeaveSl.length + 1 : 1,
+                        });
+                      } else {
+                        showToast('error', 'Please Select A Leave Type');
+                      }
+                    }}
+                  >
+                    <Picker.Item
+                      style={{
+                        color: 'black',
+                        backgroundColor: 'white',
+                      }}
+                      label="Select Leave Type"
+                      value=""
+                    />
+                    <Picker.Item
+                      style={{
+                        color: 'black',
+                        backgroundColor: 'white',
+                      }}
+                      label="CL"
+                      value="CL"
+                    />
+                    <Picker.Item
+                      style={{
+                        color: 'black',
+                        backgroundColor: 'white',
+                      }}
+                      label="OL"
+                      value="OL"
+                    />
+                  </Picker>
+                </View>
+              )}
+              {addLeaveDateData.leaveType && addLeaveDateData.techID && (
+                <CustomTextInput
+                  value={
+                    addLeaveDateData?.sl ? addLeaveDateData?.sl.toString() : ''
+                  }
+                  onChangeText={text =>
+                    setAddLeaveDateData({
+                      ...addLeaveDateData,
+                      sl: text ? parseInt(text) : '',
+                    })
+                  }
+                  placeholder="Leave Serial"
+                  title={'Leave Serial'}
+                />
+              )}
+              <View
+                style={{
+                  marginTop: responsiveHeight(3),
+                  flexDirection: 'row',
+                  justifyContent: 'space-between',
+                  alignItems: 'center',
+                  alignSelf: 'center',
+                }}
+              >
+                <CustomButton
+                  title={'Save'}
+                  color={'green'}
+                  size={'small'}
+                  disabled={!findEmptyValues(addLeaveDateData)}
+                  onClick={() => {
+                    uploadLeaveDateData();
+                    setShowLeaveDateAdd(false);
+                  }}
+                />
+                <CustomButton
+                  title={'Cancel'}
+                  color={'red'}
+                  size={'small'}
+                  onClick={() => {
+                    setShowLeaveDateAdd(false);
+                    setAddLeaveDateData({
+                      id: docId,
+                      techID: '',
+                      month: monthName,
+                      year: yearName,
+                      leaveType: '',
+                      date: todayInString(),
+                      sl: '',
+                    });
+                    setSelectedTeacher('');
+                  }}
                 />
               </View>
             </View>
