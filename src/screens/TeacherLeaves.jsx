@@ -218,13 +218,7 @@ export default function TeacherLeaves() {
       date,
       year: new Date(currentSelectedDate).getFullYear(),
       month:
-        monthNamesWithIndex[
-          new Date(currentSelectedDate).getDate() > 10
-            ? new Date(currentSelectedDate).getMonth()
-            : new Date(currentSelectedDate).getMonth() === 0
-            ? 11
-            : new Date(currentSelectedDate).getMonth() + 1
-        ].monthName,
+        monthNamesWithIndex[new Date(currentSelectedDate).getMonth()].monthName,
     });
     setFontColor('black');
   };
