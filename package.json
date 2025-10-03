@@ -9,7 +9,8 @@
     "start": "react-native start",
     "test": "jest",
     "postinstall": "patch-package",
-    "build": "cd android && gradlew.bat assembleRelease"
+    "build": "cd android && gradlew.bat assembleRelease",
+    "clean": "cd android && gradlew.bat clean"
   },
   "dependencies": {
     "@react-native-community/datetimepicker": "^8.4.2",

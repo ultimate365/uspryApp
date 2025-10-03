@@ -611,56 +611,89 @@ export default function CreateHeroResult() {
             <Text style={styles.label}>ID: {viewStudent.student_id}</Text>
             <Text style={styles.label}>Roll: {viewStudent.roll_no}</Text>
             <Text style={styles.label}>Class: {viewStudent.class}</Text>
-            {[1, 2, 3].map(part => (
-              <View key={part} style={{ marginBottom: responsiveHeight(1) }}>
-                <Text style={styles.label}>Part {part}</Text>
+            {[1, 2, 3].map(part => {
+              const part1total =
+                viewStudent.ben1 +
+                viewStudent.eng1 +
+                viewStudent.math1 +
+                viewStudent.work1 +
+                viewStudent.health1 +
+                viewStudent.envs1;
+              const part2total =
+                viewStudent.ben2 +
+                viewStudent.eng2 +
+                viewStudent.math2 +
+                viewStudent.work2 +
+                viewStudent.health2 +
+                viewStudent.envs2;
+              const part3total =
+                viewStudent.ben3 +
+                viewStudent.eng3 +
+                viewStudent.math3 +
+                viewStudent.work3 +
+                viewStudent.health3 +
+                viewStudent.envs3;
+              const total =
+                part === 1 ? part1total : part === 2 ? part2total : part3total;
+              return (
+                total > 0 && (
+                  <View
+                    key={part}
+                    style={{ marginBottom: responsiveHeight(1) }}
+                  >
+                    <Text style={styles.label}>Part {part}</Text>
 
-                {subjects.map((sub, index) => {
-                  const subjectPartKey = `${sub.shortName}${part}`;
-                  const mark = viewStudent[subjectPartKey];
-                  return (
-                    mark !== undefined &&
-                    mark !== 0 && (
-                      <View
-                        key={index}
-                        style={{
-                          flexDirection: 'row',
-                          justifyContent: 'space-between',
-                          marginHorizontal: responsiveWidth(5),
-                          marginVertical: responsiveHeight(0.5),
-                        }}
-                      >
-                        <Text style={styles.label}>{sub.fullName}</Text>
-                        <Text style={styles.label}>{mark}</Text>
-                      </View>
-                    )
-                  );
-                })}
-                <Text style={styles.label}>
-                  Total Marks:{' '}
-                  {part === 1
-                    ? viewStudent.ben1 +
-                      viewStudent.eng1 +
-                      viewStudent.math1 +
-                      viewStudent.work1 +
-                      viewStudent.health1 +
-                      viewStudent.envs1
-                    : part === 2
-                    ? viewStudent.ben2 +
-                      viewStudent.eng2 +
-                      viewStudent.math2 +
-                      viewStudent.work2 +
-                      viewStudent.health2 +
-                      viewStudent.envs2
-                    : viewStudent.ben3 +
-                      viewStudent.eng3 +
-                      viewStudent.math3 +
-                      viewStudent.work3 +
-                      viewStudent.health3 +
-                      viewStudent.envs3}
-                </Text>
-              </View>
-            ))}
+                    {subjects.map((sub, index) => {
+                      const subjectPartKey = `${sub.shortName}${part}`;
+                      const mark = viewStudent[subjectPartKey];
+                      return (
+                        mark !== undefined &&
+                        mark !== 0 && (
+                          <View
+                            key={index}
+                            style={{
+                              flexDirection: 'row',
+                              justifyContent: 'space-between',
+                              marginHorizontal: responsiveWidth(5),
+                              marginVertical: responsiveHeight(0.5),
+                            }}
+                          >
+                            <Text style={styles.label}>{sub.fullName}</Text>
+                            <Text style={styles.label}>{mark}</Text>
+                            <Text style={styles.label}>
+                              Total Marks: {total}
+                            </Text>
+                          </View>
+                        )
+                      );
+                    })}
+                    <Text style={styles.label}>
+                      Total Marks:{' '}
+                      {part === 1
+                        ? viewStudent.ben1 +
+                          viewStudent.eng1 +
+                          viewStudent.math1 +
+                          viewStudent.work1 +
+                          viewStudent.health1 +
+                          viewStudent.envs1
+                        : part === 2
+                        ? viewStudent.ben2 +
+                          viewStudent.eng2 +
+                          viewStudent.math2 +
+                          viewStudent.work2 +
+                          viewStudent.health2 +
+                          viewStudent.envs2
+                        : viewStudent.ben3 +
+                          viewStudent.eng3 +
+                          viewStudent.math3 +
+                          viewStudent.work3 +
+                          viewStudent.health3 +
+                          viewStudent.envs3}
+                    </Text>
+                  </View>
+                )
+              );
+            })}
             <Text style={styles.label}>
               Gross Total Marks:{' '}
               {viewStudent.ben1 +
